@@ -3,7 +3,7 @@ import { useState, useEffect } from 'https://unpkg.com/preact@10.5.12/hooks/dist
 
 import { FieldViewProps } from './interface.ts';
 
-const FieldView = ({ activeEntry, activeItem, newEntry, collectionEntries }: FieldViewProps) => {
+const FieldView = ({ activeEntry, activeItem, newEntry, collectionEntries, refreshEntries }: FieldViewProps) => {
   const [saveFail, setSaveFail] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,6 +41,7 @@ const FieldView = ({ activeEntry, activeItem, newEntry, collectionEntries }: Fie
         if (res.success) {
           setLoading(false);
           setSaveSuccess(true);
+          refreshEntries();
         } else {
           setLoading(false);
           setSaveFail(true);
@@ -59,6 +60,7 @@ const FieldView = ({ activeEntry, activeItem, newEntry, collectionEntries }: Fie
         if (res.success) {
           setLoading(false);
           setSaveSuccess(true);
+          refreshEntries();
         } else {
           setLoading(false);
           setSaveFail(true);
@@ -91,6 +93,7 @@ const FieldView = ({ activeEntry, activeItem, newEntry, collectionEntries }: Fie
 
   useEffect(() => {
     setActiveEntryValues(activeEntry);
+    // Select nextval(pg_get_serial_sequence('my_table', 'id')) as new_id;
     if (newEntry) setNewId(Number(collectionEntries[collectionEntries.length - 1][0]) + 1);
   }, []);
 

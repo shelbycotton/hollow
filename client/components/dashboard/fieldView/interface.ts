@@ -7,4 +7,5 @@
   activeItem: string;
   newEntry: boolean;
   collectionEntries: string[][];
+  refreshEntries: any;
  }

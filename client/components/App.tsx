@@ -33,6 +33,21 @@ const App = () => {
       .then((data) => {
         setCollections(data.data);
       })
+      .catch(error => console.log('error:', error));
+  }
+
+  const refreshEntries = () => {
+    fetch(`/api/tables/${activeItem}`)
+      .then(data => data.json())
+      .then(data => {
+        // map headers for active collection
+        const headers = data.data.columns.map((header: any) => header.column_name);
+        
+        // map entries for active collection
+        const entries = data.data.rows.map((entry:any) => Object.values(entry).map(value => value));
+        setCollectionHeaders(headers);
+        setCollectionEntries(entries);
+      })
       .catch(error => console.log('error', error));
   }
 
@@ -58,18 +73,7 @@ const App = () => {
   useEffect(() => {
     // If active item is a tool, do not fetch table
     if (currentTools.indexOf(activeItem) === -1) {
-      fetch(`/api/tables/${activeItem}`)
-        .then(data => data.json())
-        .then(data => {
-          // map headers for active collection
-          console.log('in active item effect');
-          const headers = data.data.columns.map((header: any) => header.column_name)
-          // map entries for active collection
-          const entries = data.data.rows.map((entry:any) => Object.values(entry).map(value => value));
-          setCollectionHeaders(headers);
-          setCollectionEntries(entries);
-        })
-        .catch(error => console.log('error', error));
+      refreshEntries();
     }
   }, [activeItem]);
 
@@ -150,6 +154,7 @@ const App = () => {
     
     // set view for collection component
     if (view === 'collection') {
+      console.log('in collection');
       activeView = (
         <ActiveCollection 
           activeCollection={activeItem}
@@ -159,7 +164,9 @@ const App = () => {
         />
       );
     } else if (view === 'content-builder') {
-      activeView = <ContentBuilder refreshCollections={refreshCollections} />
+      activeView = <ContentBuilder
+        refreshCollections={refreshCollections}
+      />
     } else if (view === 'plugins') {
         // need to create plugins compononent before assinging to activeView - or not. dont really have a use for it atm
         // activeView = <Plugins />
@@ -169,9 +176,21 @@ const App = () => {
         // activeView = <Settings />
         activeView = <div></div>;
     } else if (view === 'field') {
-        activeView = <FieldView activeEntry={activeEntry} activeItem={activeItem} newEntry={false} collectionEntries={collectionEntries} />;
+        activeView = <FieldView
+          activeEntry={activeEntry}
+          activeItem={activeItem}
+          newEntry={false}
+          collectionEntries={collectionEntries}
+          refreshEntries={refreshEntries}
+        />;
     } else if (view === 'addField') {
-        activeView = <FieldView activeEntry={activeEntry} activeItem={activeItem} newEntry={true} collectionEntries={collectionEntries} />;
+        activeView = <FieldView
+          activeEntry={activeEntry}
+          activeItem={activeItem}
+          newEntry={true}
+          collectionEntries={collectionEntries}
+          refreshEntries={refreshEntries}
+        />;
     }
 
   return (
