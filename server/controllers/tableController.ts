@@ -26,7 +26,7 @@ tableController.getAllTables = async (ctx: any, next: Function) => {
 };
 
 tableController.getTableByName = async (ctx: any, next: Function) => {
-  const rowText = `SELECT * FROM ${ctx.params.name}`;
+  const rowText = `SELECT * FROM ${ctx.params.name} ORDER BY id ASC`;
 
   const columnText = `
     SELECT column_name, data_type 
@@ -226,50 +226,49 @@ tableController.updateRow = async (ctx: any) => {
   //   ctx.response.status = 404;
   //   return;
   // } else
-   
-    const { value } = await ctx.request.body({ type: 'json' });
-    // const { name } = await value;
-    const entries = Object.entries(await value);
-    console.log('entries: ', entries);
-    const requestKeys: string[] = Object.keys(await value);
-    const paramVals: string[] = Object.values(await value);
-    let set = 'SET ';
-    const arrLength = entries.length;
-    for (let i = 0; i < arrLength; i++) {
-      if (i === arrLength - 1) {
-        set += `${requestKeys[i]} = $${i + 1} `;
-      } else {
-        set += `${requestKeys[i]} = $${i + 1}, `;
-      }
+  
+  const { value } = await ctx.request.body({ type: 'json' });
+  // const { name } = await value;
+  const entries = Object.entries(await value);
+  console.log('entries: ', entries);
+  const requestKeys: string[] = Object.keys(await value);
+  const paramVals: string[] = Object.values(await value);
+  let set = 'SET ';
+  const arrLength = entries.length;
+  for (let i = 0; i < arrLength; i++) {
+    if (i === arrLength - 1) {
+      set += `${requestKeys[i]} = $${i + 1} `;
+    } else {
+      set += `${requestKeys[i]} = $${i + 1}, `;
     }
-    console.log('ctx.params.id: ', ctx.params.id);
-    const last = entries.length + 1;
-    const next = `UPDATE ${table} ${set} WHERE id = $${last} RETURNING *;`;
-    paramVals.push(ctx.params.id);
-    console.log({ paramVals });
-    if (!ctx.request.hasBody) {
-      ctx.response.status = 400;
+  }
+  console.log('ctx.params.id: ', ctx.params.id);
+  const last = entries.length + 1;
+  const next = `UPDATE ${table} ${set} WHERE id = $${last} RETURNING *;`;
+  paramVals.push(ctx.params.id);
+  console.log({ paramVals });
+  if (!ctx.request.hasBody) {
+    ctx.response.status = 400;
+    ctx.response.body = {
+      success: false,
+      msg: 'No data included',
+    };
+  } else {
+    try {
+      const result = await runQuery(next, paramVals);
+      ctx.response.status = 200;
+      ctx.response.body = {
+        success: true,
+        data: result.rows,
+      };
+    } catch (err) {
+      ctx.response.status = 500;
       ctx.response.body = {
         success: false,
-        msg: 'No data included',
+        message: err.toString(),
       };
-    } else {
-      try {
-        const result = await runQuery(next, paramVals);
-        ctx.response.status = 200;
-        ctx.response.body = {
-          success: true,
-          data: result.rows,
-        };
-      } catch (err) {
-        ctx.response.status = 500;
-        ctx.response.body = {
-          success: false,
-          message: err.toString(),
-        };
-      }
     }
-  
+  }
 };
 
 tableController.deleteRow = async (ctx: any) => {
