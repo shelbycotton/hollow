@@ -92,7 +92,6 @@ const ActiveCollection = ({ activeCollection, collectionEntries, collectionHeade
   const handleResultsPerPageClick = (event: any) => {
     //@ts-ignore
     const text = event.target.innerText;
-    setActivePage('1');
     setActiveResultsPerPage(text);
   };
 

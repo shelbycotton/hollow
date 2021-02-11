@@ -154,7 +154,7 @@ const App = () => {
     
     // set view for collection component
     if (view === 'collection') {
-      console.log('in collection');
+      // change to stay on same page for current collection
       activeView = (
         <ActiveCollection 
           activeCollection={activeItem}
